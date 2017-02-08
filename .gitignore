@@ -1,0 +1,10 @@
+
+
+*.log
+*.sdf
+*.sln
+*.suo
+res/
+*.aps
+*.vcxproj
+*.filters
