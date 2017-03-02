@@ -19,6 +19,18 @@
 #include <afxwin.h>         // MFC 핵심 및 표준 구성 요소입니다.
 #include <afxext.h>         // MFC 확장입니다.
 
+#include "logWriter.h"
+
+#define INI_PATH				_T("\\FLASH_SETTING.ini")
+
+#ifndef WIN64
+//#import "C:\Program Files\Common Files\System\ado\msado60.tlb"  rename("EOF", "EndOfFile") 
+#import "C:\Program Files\Common Files\System\ado\msado60_Backcompat.tlb" rename("EOF", "EndOfFile")
+#else
+#import "C:\Program Files (x86)\Common Files\System\ado\msado60_Backcompat_i386.tlb" no_namespace rename("EOF", "EndOfFile") 
+#endif
+
+
 
 
 
@@ -32,9 +44,11 @@
 
 #include <afxcontrolbars.h>     // MFC의 리본 및 컨트롤 막대 지원
 
-
-
-
+#define USING_THREAD 1
+#define CHKMEM_GetFileInfo 1
+#define SEND_FILEINFO_TO_DEVICE 1
+#define CHKMEM_GetFileInfo_sub2 1
+#define USING_ADO15 1
 
 
 
