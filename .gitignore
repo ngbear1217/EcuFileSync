@@ -10,5 +10,8 @@ EcuFileSync/EcuFileSync.v12.suo
 Debug/
 Bak/
 ipch/
+<<<<<<< HEAD
 *.obj
+=======
+>>>>>>> refs/remotes/origin/copy-Floder
 
