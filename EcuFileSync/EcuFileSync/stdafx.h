@@ -49,6 +49,8 @@
 #define SEND_FILEINFO_TO_DEVICE 1
 #define CHKMEM_GetFileInfo_sub2 1
 #define USING_ADO15 1
+#define USING_WSASync 1
+//#define USING_HASHMAP 
 
 
 

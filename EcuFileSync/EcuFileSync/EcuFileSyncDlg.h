@@ -4,9 +4,20 @@
 
 #pragma once
 #include "afxwin.h"
+#include "ProtocolDef.h"
+#include "ClientObject.h"
+#include "ClientMng.h"
+#include "WSASyncSelectDlg.h"
+#include <list>
+#include <hash_map>
+#ifdef USING_WSASync
+#include "Net_WSAAsyncSelect.h"
+#else
 #include "NetworkController.h"
+#endif
 
 
+using namespace std;
 // CEcuFileSyncDlg 대화 상자
 class CEcuFileSyncDlg : public CDialogEx
 {
@@ -48,12 +59,19 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	
+	CWSASyncSelectDlg m_NetServerDlg;
 	CEdit m_Edit_Port;
 	CEdit m_EDIT_MAIN;
 	HBITMAP m_hbm_LEDOn;
 	HBITMAP m_hbm_LEDOff;
-
+#ifdef USING_WSASync
+	CNet_WSAAsyncSelect* m_NetCtrl;
+#else
 	NetworkController m_NetCtrl;
+#endif
+	
+	CClientMng* m_pClientMng;
+
 	bool m_bChkCloseThread;
 	bool m_bChkClose;
 	CString m_strINIPath;

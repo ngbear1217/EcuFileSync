@@ -92,10 +92,18 @@ BOOL CEcuFileSyncDlg::OnInitDialog()
 	//ShowWindow(SW_SHOWMINIMIZED);
 
 	int nport = 16921;
+
+#ifdef USING_WSASync
+
+	//m_NetCtrl = new CNet_WSAAsyncSelect();
+	//m_NetCtrl->Init(nport);
+#else
+
 	m_NetCtrl.Init(nport);
 	DWORD dwThreadId = 0;
 	HANDLE hThread = CreateThread(NULL, 0, ServerStart, &m_NetCtrl, 0, &dwThreadId);
 	CloseHandle(hThread);
+#endif
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -145,14 +153,28 @@ void CEcuFileSyncDlg::SetViewObject(ClientObject* pClientObj){
 	int nVciNo = 0;
 	bool bBoadNewYN = true;
 	for (int i = VIEW_NO::BOARD1; i <= VIEW_NO::BOARD10; i++){
+		
+#ifdef USING_HASHMAP
 		hash_map<int, ClientObject*>::iterator Iter;
-		for (Iter = m_NetCtrl.m_Objects.begin(); Iter != m_NetCtrl.m_Objects.end(); ++Iter){
+		for (Iter = m_ClientMng.m_Objects.begin(); Iter != m_ClientMng.m_Objects.end(); ++Iter){
 			if (((Iter->second))->mViewNo == i){
 				bBoadNewYN = false;
 				break;
 			}
 			bBoadNewYN = true;
 		}
+#else
+		CLIENT_SET::iterator Iter;
+		ClientObject* pClientObj;
+		for (Iter = m_pClientMng->g_sClients.begin(); Iter != m_pClientMng->g_sClients.end(); ++Iter){
+			pClientObj = *Iter;
+			if (pClientObj->mViewNo == i){
+				bBoadNewYN = false;
+				break;
+			}
+			bBoadNewYN = true;
+		}
+#endif
 		if (bBoadNewYN){
 			nVciNo = i;
 			break;
@@ -242,17 +264,31 @@ bool CEcuFileSyncDlg::FileUpload(ClientObject* pClientObj, CString strFileName)
 //////////////////////////////////// msg event function ///////////////////////////////////
 void CEcuFileSyncDlg::OnBnClickedBtnSockOpen()
 {
-	CString strPort;
-	int nPort = 0;
-	nPort = GetDlgItemInt(IDC_EDIT_PORT);
-
-
-	DWORD dwThreadId = 0;
-
-	if (nPort > 0){
+		DWORD dwThreadId = 0;
+	
 		//nc.m_nPort = nPort;
+#ifdef USING_WSASync
+		/*if (m_NetCtrl != NULL)
+			m_NetCtrl = new CNet_WSAAsyncSelect();
+		HANDLE hThread = CreateThread(NULL, 0, ServerStart, &m_NetCtrl, 0, &dwThreadId);
+		CloseHandle(hThread);*/
+
+		m_NetServerDlg.Create(CWSASyncSelectDlg::IDD);
+		m_NetServerDlg.Init(16921);
+
+		
+		//m_EDIT_MAIN.SetWindowText("Socket Open");
+		//m_btn_open.EnableWindow(false);
+		//m_btn_close.EnableWindow(true);
+		//	GetDlgItem(IDC_BTN_SOCK_START)->EnableWindow(false);
+		//	GetDlgItem(IDC_BTN_SOCK_CLOSE)->EnableWindow(true);
+#else
+
+	int nPort = 16921;
+	if (nPort > 0){
 		if (m_NetCtrl.Init(nPort))
 		{
+
 			m_EDIT_MAIN.SetWindowText("Socket Open");
 			m_btn_open.EnableWindow(false);
 			m_btn_close.EnableWindow(true);
@@ -266,6 +302,8 @@ void CEcuFileSyncDlg::OnBnClickedBtnSockOpen()
 	else{
 		AfxMessageBox("Port 입력하시오.", 0);
 	}
+#endif
+	
 }
 
 
@@ -273,7 +311,14 @@ void CEcuFileSyncDlg::OnBnClickedBtnSockOpen()
 
 void CEcuFileSyncDlg::OnBnClickedSockClose() // socket close
 {
+#ifdef USING_WSASync
+	if (m_NetCtrl != NULL){
+		delete m_NetCtrl;
+		m_NetCtrl = NULL;
+	}
+#else
 	m_NetCtrl.ServerClose();
+#endif
 	//m_btn_open.EnableWindow(true);
 	//m_btn_close.EnableWindow(false);
 	//GetDlgItem(IDC_BTN_SOCK_START)->EnableWindow(true);
@@ -378,11 +423,14 @@ void CEcuFileSyncDlg::OnBnClickedChkAll()
 void CEcuFileSyncDlg::OnBnClickedBtnSendfile()
 {
 	//check chkbox
-	hash_map<int, ClientObject*>::iterator Iter;
-	ClientObject* pClientObj;
+	
+	
 	CString strFileName;
 	mCMB_FILELIST.GetWindowText(strFileName);
-	for (Iter = m_NetCtrl.m_Objects.begin(); Iter != m_NetCtrl.m_Objects.end(); ++Iter){
+#ifdef USING_HASHMAP
+	ClientObject* pClientObj;
+	hash_map<int, ClientObject*>::iterator Iter;
+	for (Iter = m_ClientMng.m_Objects.begin(); Iter != m_ClientMng.m_Objects.end(); ++Iter){
 
 		pClientObj = (Iter->second);
 		if (IsDlgButtonChecked(pClientObj->unChkBox))
@@ -390,6 +438,18 @@ void CEcuFileSyncDlg::OnBnClickedBtnSendfile()
 			FileUpload(pClientObj, strFileName);
 		}
 	}
+#else
+	ClientObject* pClientObj;
+	CLIENT_SET::iterator Iter;
+	for (Iter = m_pClientMng->g_sClients.begin(); Iter != m_pClientMng->g_sClients.end(); ++Iter){
+		pClientObj = *Iter;
+		if (IsDlgButtonChecked(pClientObj->unChkBox))
+		{
+			FileUpload(pClientObj, strFileName);
+		}
+	}
+#endif
+
 }
 
 
@@ -403,8 +463,14 @@ void CEcuFileSyncDlg::OnBnClickedBtnSendAll()
 ////////////////////////////////////// Thread Function ///////////////////////////////////////////////////
 DWORD WINAPI ServerStart(PVOID param)
 {
+#ifdef USING_WSASync
+	CNet_WSAAsyncSelect* pNc = (CNet_WSAAsyncSelect*)param;
+	pNc->Init(16921);
+#else
 	NetworkController* pNc = (NetworkController*)param;
 	pNc->AcceptProcess();
+
+#endif
 	return 0;
 }
 
@@ -464,15 +530,18 @@ void CEcuFileSyncDlg::OnBnClickedBtnFolder()
 
 }
 
-
-
-
 void CEcuFileSyncDlg::OnClose()
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+#ifdef USING_WSASync
+	if(m_NetCtrl != NULL){
+		delete m_NetCtrl;
+		m_NetCtrl = NULL;
+	}
 	
+#else
 	m_NetCtrl.ServerClose();
-
+#endif
 	CDialogEx::OnClose();
 }
 

@@ -55,6 +55,7 @@ public ://view
 
 public://connect
 	//CString m_strMessage;
+	SOCKET m_sSock;
 	char m_cstrIP[16];
 	CString m_strIP;
 	int m_nConnectType;

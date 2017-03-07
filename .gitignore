@@ -7,3 +7,7 @@ res/
 *.vcxproj
 *.filters
 EcuFileSync/EcuFileSync.v12.suo
+Debug/
+Bak/
+ipch/
+
