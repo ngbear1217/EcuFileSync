@@ -29,6 +29,7 @@ public:
 	CNetComm cNetComm;
 	SOCKET_SET m_sSocks;
 	bool Init(int nPort);
+	void PostNcDestroy();
 protected:
 	afx_msg LRESULT OnSockNoti(WPARAM wParam, LPARAM lParam);
 };

@@ -92,6 +92,7 @@ BOOL CEcuFileSyncDlg::OnInitDialog()
 	//ShowWindow(SW_SHOWMINIMIZED);
 
 	int nport = 16921;
+	m_pNetServerDlg = NULL;
 
 #ifdef USING_WSASync
 
@@ -272,9 +273,16 @@ void CEcuFileSyncDlg::OnBnClickedBtnSockOpen()
 			m_NetCtrl = new CNet_WSAAsyncSelect();
 		HANDLE hThread = CreateThread(NULL, 0, ServerStart, &m_NetCtrl, 0, &dwThreadId);
 		CloseHandle(hThread);*/
-
-		m_NetServerDlg.Create(CWSASyncSelectDlg::IDD);
-		m_NetServerDlg.Init(16921);
+		if (m_pNetServerDlg == NULL){
+			m_pNetServerDlg = new CWSASyncSelectDlg();
+			m_pNetServerDlg->Create(CWSASyncSelectDlg::IDD, this);
+			m_pNetServerDlg->ShowWindow(SW_SHOW);
+			m_pNetServerDlg->Init(16921);
+		}
+		else{
+			m_pNetServerDlg->SetFocus();
+		}
+		
 
 		
 		//m_EDIT_MAIN.SetWindowText("Socket Open");
@@ -312,9 +320,13 @@ void CEcuFileSyncDlg::OnBnClickedBtnSockOpen()
 void CEcuFileSyncDlg::OnBnClickedSockClose() // socket close
 {
 #ifdef USING_WSASync
-	if (m_NetCtrl != NULL){
-		delete m_NetCtrl;
-		m_NetCtrl = NULL;
+	//if (m_NetCtrl != NULL){
+	//	delete m_NetCtrl;
+	//	m_NetCtrl = NULL;
+	//}
+	if (m_pNetServerDlg != NULL){
+		m_pNetServerDlg->DestroyWindow();
+		m_pNetServerDlg = NULL;
 	}
 #else
 	m_NetCtrl.ServerClose();
