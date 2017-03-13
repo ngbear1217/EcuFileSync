@@ -11,7 +11,17 @@ Debug/
 Bak/
 ipch/
 <<<<<<< HEAD
+<<<<<<< HEAD
 *.obj
 =======
 >>>>>>> refs/remotes/origin/copy-Floder
+=======
+=======
+*.obj
+>>>>>>> refs/remotes/origin/master
+>>>>>>> refs/remotes/origin/copy-Floder
 
+*.txt
+*.exe
+*.pch
+*.tlog

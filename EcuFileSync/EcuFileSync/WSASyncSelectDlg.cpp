@@ -19,6 +19,12 @@ CWSASyncSelectDlg::CWSASyncSelectDlg(CWnd* pParent /*=NULL*/)
 
 CWSASyncSelectDlg::~CWSASyncSelectDlg()
 {
+	if (cNetComm.g_hsoListen != INVALID_SOCKET)
+		closesocket(cNetComm.g_hsoListen);
+	for (SOCKET_SET::iterator it = m_sSocks.begin(); it != m_sSocks.end(); it++)
+		closesocket(*it);
+	U_Log("COMMON", "[%-40s]Listen socket closed, program terminates...", __FUNCTION__);
+	cNetComm.Close();
 }
 
 void CWSASyncSelectDlg::DoDataExchange(CDataExchange* pDX)
@@ -211,4 +217,8 @@ afx_msg LRESULT CWSASyncSelectDlg::OnSockNoti(WPARAM wParam, LPARAM lParam)
 	break;
 	}
 	return 0;
+}
+
+void CWSASyncSelectDlg::PostNcDestroy(){
+	delete this;
 }

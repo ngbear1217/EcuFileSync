@@ -59,13 +59,14 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	
-	CWSASyncSelectDlg m_NetServerDlg;
+
 	CEdit m_Edit_Port;
 	CEdit m_EDIT_MAIN;
 	HBITMAP m_hbm_LEDOn;
 	HBITMAP m_hbm_LEDOff;
 #ifdef USING_WSASync
 	CNet_WSAAsyncSelect* m_NetCtrl;
+	CWSASyncSelectDlg* m_pNetServerDlg;
 #else
 	NetworkController m_NetCtrl;
 #endif
